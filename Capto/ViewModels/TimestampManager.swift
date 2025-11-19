@@ -37,7 +37,7 @@ final class TimestampManager {
         
         // Reveal this timestamp
         if !revealedTimestampIDs.contains(id) {
-            withAnimation(.easeInOut(duration: DesignSystem.Animation.timestampDuration)) {
+            _ = withAnimation(.easeInOut(duration: DesignSystem.Animation.timestampDuration)) {
                 revealedTimestampIDs.insert(id)
             }
         }
@@ -46,7 +46,7 @@ final class TimestampManager {
         let hideTask = DispatchWorkItem { [weak self] in
             guard let self = self else { return }
             if self.revealedTimestampIDs.contains(id) {
-                withAnimation(.easeInOut(duration: DesignSystem.Animation.timestampDuration)) {
+                _ = withAnimation(.easeInOut(duration: DesignSystem.Animation.timestampDuration)) {
                     self.revealedTimestampIDs.remove(id)
                 }
                 logDebug("[TimestampManager] Auto-hiding timestamp for \(id)")
@@ -64,7 +64,7 @@ final class TimestampManager {
         // If already visible, hide it immediately
         if revealedTimestampIDs.contains(id) {
             cancelTimestampHideTask(for: id)
-            withAnimation(.easeInOut(duration: DesignSystem.Animation.timestampDuration)) {
+            _ = withAnimation(.easeInOut(duration: DesignSystem.Animation.timestampDuration)) {
                 revealedTimestampIDs.remove(id)
             }
             return
