@@ -1,0 +1,197 @@
+# Important rules you HAVE TO FOLLOW
+- Always add debug logs & comments in the code for easier debug & readability
+- Every time you choose to apply a rule(s), explicitly state the rule(s) in the output. You can abbreviate the rule description to a single word or phrase
+- Do not make any changes, until you have 95% confidence that you know what to build. Ask me follow up questions until you have that confidence.
+
+# Project structure
+- All the files go inside /Capto (placeholder name - may change)
+- The main swift file is CaptoApp.swift
+
+# Tech Stack
+- SwiftUI for frontend (Fallback with UIKit if absolutely necessary)
+- Swift for code and logic
+- iOS 17+ only
+- SwiftData for local data persistence
+- No third-party dependencies
+- No analytics
+- No backend server (all data stored locally)
+- No monetization features
+- Completely free app
+
+# Swift specific rules
+
+## 0. General Coding
+- Always prefer simple solutions
+- Avoid duplication of code whenever possible, which means checking for other areas of the codebase that might already have similar code and functionality
+- Write code that takes into account the different environments: dev, test, and prod
+- You are careful to only make changes that are requested or you are confident are well understood and related to the change being requested
+- When fixing an issue or bug, do not introduce a new pattern or technology without first exhausting all options for the existing implementation. And if you finally do this, make sure to remove the old implementation afterwards so we don't have duplicate logic.
+- Keep the codebase very clean and organized
+- Avoid writing scripts in files if possible, especially if the script is likely only to be run once
+- Avoid having files over 200-300 lines of code. Refactor at that point.
+- Mocking data is only needed for tests, never mock data for dev or prod
+- Never add stubbing or fake data patterns to code that affects the dev or prod environments
+- Never overwrite my .env file without first asking and confirming
+
+## 1. State Management
+
+- Use appropriate property wrappers and macros:
+  - Annotate view models with `@Observable`, e.g. `@Observable final class MyModel`.
+  - Do not use @State in the SwiftUI View for view model observation. Instead, use `let model: MyModel`.
+  - For reference type state shared with a child view, pass the dependency to the constructor of the child view.
+  - For value type state shared with a child view, use SwiftUI bindings if and only if the child needs write access to the state.
+  - For value type state shared with a child view, pass the value if the child view only needs read access to the state.
+  - Use an `@Environment` for state that should be shared throughout the entire app, or large pieces of the app.
+  - Use `@State` only for local state that is managed by the view itself.
+
+## 2. Performance Optimization
+
+- Implement lazy loading for large lists using `LazyVStack`
+- Optimize ForEach loops by using stable identifiers
+- Keep the thought stream performant even with thousands of thoughts
+- Use pagination when loading older thoughts (load in batches of 50)
+- Minimize re-renders by keeping views small and focused
+
+## 3. Data Persistence (SwiftData)
+
+- Use SwiftData models with `@Model` macro for all persisted data
+- Thought model should be simple: ID, content (String), timestamp (Date)
+- Implement auto-save immediately when thought is sent (no debouncing needed)
+- Always handle potential data loading failures gracefully
+- Never delete user data without confirmation dialog
+- Sort thoughts chronologically (oldest to newest for display)
+- Use efficient queries with predicates and sorting
+
+## 4. SwiftUI Lifecycle
+
+- Use `@main` and `App` protocol for the app's entry point
+- Implement `Scene`s for managing app structure
+- Use appropriate view lifecycle methods like `onAppear` and `onDisappear`
+- Ensure keyboard appears immediately on launch using `.onAppear` and focus state
+
+## 5. Data Flow
+
+- Use the Observation framework (`@Observable`, `@State`, and `@Binding`) to build reactive views
+- Implement proper error handling and propagation
+- Keep data flow unidirectional and predictable
+- Thoughts flow: User types → Send → Save to SwiftData → Update UI
+
+## 6. Testing
+
+- Write unit tests for ViewModels and business logic in the UnitTests folder
+- Implement UI tests for critical user flows in the UITests folder
+- Use Preview providers for rapid UI iteration and testing
+- Test with varying amounts of data (empty state, 1 thought, 100+ thoughts)
+
+## 7. SwiftUI-specific Patterns
+
+- Use `@Binding` for two-way data flow between parent and child views
+- Implement custom `PreferenceKey`s for child-to-parent communication if needed
+- Utilize `@Environment` for dependency injection
+- Keep views focused and under 200 lines - extract subviews when needed
+- Use SwiftUI's native List or ScrollView with LazyVStack for the thought stream
+
+## 8. Security
+
+- Follow best practices to building a secure app
+- All data stays local on device - nothing transmitted over network
+- No sensitive information to protect (no passwords, no API keys)
+- Ensure data is only accessible within the app sandbox
+
+## 9. Declarations
+- Before declaring a new struct or class, make sure it doesn't already exist in the project
+- Use descriptive names that clearly indicate purpose
+- Keep models, views, and view models in separate files
+- Naming convention: ThoughtBubbleView, CaptoView, Thought (model), etc.
+
+## 10. No Modules
+- Don't create extra modules or packages. Keep all files in the same target and project.
+
+## 11. User Experience
+
+- App must open directly to the thought stream with keyboard visible (no splash screen)
+- Keyboard must appear instantly on launch using `.focused()` modifier
+- Keyboard stays visible after sending a thought (for rapid-fire entry)
+- Auto-scroll to bottom when new thought is sent
+- Loading states should appear for any operation taking >0.5 seconds (rare with local storage)
+- Error messages should be friendly and actionable (tell user what to do)
+- Confirmation dialog required for deleting thoughts
+- Support both light and dark mode seamlessly
+- Use system fonts and native iOS design patterns
+- Haptic feedback on send (light impact)
+
+## 12. Keyboard Management
+
+- Use `.focused()` state binding to control keyboard
+- Keep keyboard visible after sending (don't dismiss)
+- Text field should auto-focus on app launch
+- Keyboard should never unexpectedly dismiss during use
+- Test keyboard behavior thoroughly on real device (not just simulator)
+
+## 13. Capto-Specific Patterns
+
+- Thoughts are always displayed chronologically (newest at bottom)
+- Empty sends are ignored (don't create empty thought bubbles)
+- Each thought appears as a centered bubble with consistent width
+- Date headers separate different days ("Today", "Yesterday", "Nov 14")
+- Timestamps revealed on tap/swipe (like iMessage)
+- All bubbles use iOS native styling (rounded, subtle shadow, system colors)
+- Spacing between bubbles should feel natural (not too tight, not too loose)
+- Text input field always fixed at bottom of screen
+- Send button appears next to text field (arrow up icon)
+- Search icon always visible in top bar
+
+## 14. Visual Design Rules
+
+- Use iOS 17+ native components wherever possible
+- Bubbles should be centered with uniform width (80-85% of screen width)
+- Background color adapts to light/dark mode automatically
+- Bubble color uses system background colors (subtle, not bright)
+- Text uses system font (San Francisco) with comfortable reading size
+- Send button should be obvious and easy to tap
+- No custom colors unless necessary - prefer system colors
+- Maintain proper safe area insets for notched devices
+
+## 15. Search Functionality
+
+- Search filters thoughts by matching text in content
+- Search is case-insensitive
+- Highlight matching text in search results
+- Show "No thoughts found" when no matches
+- Clear button to exit search and return to main stream
+- Search should be fast even with hundreds of thoughts
+
+## 16. Delete Functionality
+
+- Swipe left on bubble to reveal delete button
+- Always show confirmation dialog before deleting
+- Dialog text: "Delete this thought?" with Cancel/Delete buttons
+- Deletion is permanent (no undo)
+- UI should update immediately after deletion
+- Handle edge case: deleting while scrolling
+
+## 17. Edge Cases to Handle
+
+- First launch (empty state) - show blank stream with keyboard ready
+- Very long thoughts - bubble should expand vertically, no truncation
+- Rapid-fire sending - ensure all thoughts save correctly
+- Deleting while searching - update search results
+- Date boundaries - ensure date headers appear correctly at midnight
+- Scrolling performance with 1000+ thoughts
+- Device rotation - maintain scroll position and keyboard state
+
+## 18. Performance Targets
+
+- App launch to keyboard visible: < 0.5 seconds
+- Send thought to appear in stream: < 0.1 seconds (local save is fast)
+- Smooth scrolling at 60fps even with 500+ thoughts
+- Search results appear instantly as user types
+- Pull-to-refresh older thoughts: < 0.3 seconds
+
+## 19. Accessibility
+
+- All interactive elements should have proper accessibility labels
+- Support Dynamic Type (text sizing)
+- Ensure sufficient color contrast in both light and dark mode
+- VoiceOver support for all key features
+- Thoughts should be readable by screen readers with timestamps
