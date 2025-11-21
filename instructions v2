@@ -1,0 +1,280 @@
+# Capto - Requirements Document
+
+## 1. App Overview
+
+Capto is a minimalist brain-dump app for iPhone that feels like texting yourself throughout the day. When you open it, the keyboard is ready and you can immediately type whatever's on your mind. Each thought appears as a message bubble in a continuous, chronological stream. There's no pressure to organize, title, or structure anything—just capture your thoughts as they come and scroll back through them anytime. It's perfect for people who want to quickly log ideas, feelings, or reminders without the friction of traditional note-taking apps.
+
+## 2. Main Goals
+
+1. Let users capture thoughts instantly with zero friction—keyboard ready when app opens.
+2. Create a natural, conversation-like interface where thoughts flow chronologically.
+3. Keep the experience minimal and distraction-free with no organization required.
+4. Make it easy to rapid-fire multiple thoughts in succession.
+5. Allow users to scroll back through their thought history organized by date.
+
+## 3. User Stories
+
+**US-001:** As a user, I want the app to open with the keyboard ready so that I can start typing immediately without extra taps.
+
+**US-002:** As a user, I want to send my thought with one tap so that I can quickly capture it and move on.
+
+**US-003:** As a user, I want the keyboard to stay open after sending so that I can add multiple thoughts in quick succession.
+
+**US-004:** As a user, I want my thoughts to appear as bubbles in a vertical stream so that it feels natural and conversation-like.
+
+**US-005:** As a user, I want to scroll up through my past thoughts so that I can review what I was thinking on previous days.
+
+**US-006:** As a user, I want to see date headers separating different days so that I can easily identify when I wrote something.
+
+**US-007:** As a user, I want to swipe on a thought bubble to see its timestamp so that I know exactly when I captured that thought.
+
+**US-008:** As a user, I want to delete individual thoughts by swiping so that I can remove things I no longer want to keep.
+
+**US-009:** As a user, I want to search through my past thoughts so that I can find specific ideas or topics.
+
+**US-010:** As a user, I want blank sends to be ignored so that I don't accidentally create empty bubbles.
+
+**US-011:** As a user, I want the newest thought to appear at the bottom with auto-scroll so that I always see what I just wrote.
+
+**US-012:** As a user, I want to pull down from the top to load older thoughts so that I can access my entire history.
+
+## 4. Features
+
+**F-001: Instant Keyboard on Launch**
+- What it does: When the app opens, the keyboard slides up immediately and the text input field is focused and ready to type.
+- When it appears: Every single time the app launches or comes to foreground.
+- Error handling: If keyboard fails to appear (very rare), show a message "Tap the text field to start typing."
+
+**F-002: Send Thought**
+- What it does: User types in the text field at the bottom and taps the send button (or hits return). The thought appears as a new bubble at the bottom of the stream.
+- When it appears: Always available when there's text in the input field.
+- Error handling: If save fails, show "Failed to save thought. Try again." and keep the text in the input field.
+
+**F-003: Ignore Blank Sends**
+- What it does: If the user taps send with an empty text field, nothing happens—no bubble is created.
+- When it appears: Always active.
+- Error handling: None needed.
+
+**F-004: Keyboard Persistence**
+- What it does: After sending a thought, the keyboard stays visible and the text field clears, ready for the next thought.
+- When it appears: After every successful send.
+- Error handling: None needed.
+
+**F-005: Capto Display**
+- What it does: Shows all thoughts as centered, rounded bubbles stacked vertically. Each bubble has consistent width and natural spacing. Uses iOS 26 native bubble styling.
+- When it appears: Whenever there are saved thoughts to display.
+- Error handling: If no thoughts exist yet, show empty stream with just the input field at bottom.
+
+**F-006: Date Headers**
+- What it does: Groups thoughts by date with headers like "Today," "Yesterday," "Nov 14," "Nov 13," etc. Headers appear above the first thought from each day.
+- When it appears: Automatically inserted between thoughts from different days.
+- Error handling: None needed.
+
+**F-007: Timestamp Reveal**
+- What it does: When you tap or swipe on a thought bubble, it reveals the exact timestamp (e.g., "2:34 PM") similar to iMessage behavior.
+- When it appears: On tap/swipe of any bubble.
+- Error handling: None needed.
+
+**F-008: Auto-Scroll to New Thought**
+- What it does: When you send a new thought, the stream automatically scrolls to the bottom to show the new bubble.
+- When it appears: After every successful send.
+- Error handling: None needed.
+
+**F-009: Load Older Thoughts**
+- What it does: Pull down from the top of the stream to load older thoughts (pagination).
+- When it appears: When viewing thoughts and pulling down from top.
+- Error handling: If loading fails, show "Couldn't load older thoughts. Pull to try again."
+
+**F-010: Delete Thought**
+- What it does: Swipe left on any bubble to reveal a delete button. Tapping it removes the thought permanently.
+- When it appears: Available on every thought bubble.
+- Error handling: Show confirmation dialog: "Delete this thought?" with Cancel/Delete options.
+
+**F-011: Search Thoughts**
+- What it does: Tap the search icon in the top bar to open a search field. Type to filter thoughts that contain the search text. Results highlight matching text.
+- When it appears: Search icon always visible in top bar.
+- Error handling: If no results found, show "No thoughts found for '[search term]'."
+
+**F-012: Thought Bubbles - Visual Style**
+- What it does: Bubbles use iOS native styling with rounded corners, subtle shadows, and system colors that adapt to light/dark mode.
+- When it appears: All thought bubbles.
+- Error handling: None needed.
+
+## 5. Screens
+
+**S-001: Main Stream Screen**
+- What's on it: The entire vertical scrollable stream of thought bubbles with date headers. Text input field fixed at the bottom. Send button next to input field. Search icon in top bar. Keyboard visible by default.
+- How to get there: This is the main screen—opens automatically when you launch the app.
+
+**S-002: Search Screen**
+- What's on it: Search field at top, filtered list of thought bubbles that match the search query below. Cancel button to exit search.
+- How to get there: Tap the search icon from S-001.
+
+**S-003: Delete Confirmation Dialog**
+- What's on it: Alert popup asking "Delete this thought?" with Cancel and Delete buttons.
+- How to get there: Swipe left on a bubble and tap Delete.
+
+## 6. Data
+
+**D-001: Thought Object**
+- What it stores: Each thought has a unique ID, the text content, and the exact date/time it was created.
+- Stored where: On the iPhone using SwiftData (local storage).
+
+**D-002: Thought List**
+- What it stores: Collection of all thoughts sorted chronologically (oldest to newest).
+- Stored where: Queried from SwiftData on demand with pagination.
+
+## 7. Extra Details
+
+**Internet Connection:**
+- Not required. App works completely offline.
+
+**Data Storage:**
+- All thoughts stored locally on device using SwiftData.
+- No cloud sync in this version.
+- No data leaves the device.
+
+**iPhone Permissions:**
+- None needed.
+
+**Dark Mode:**
+- Full support for system light and dark mode. Bubbles and background adjust automatically.
+
+**iOS Version:**
+- Target iOS 17 or later.
+
+**Third-Party Services:**
+- None. Completely standalone app.
+
+**Monetization:**
+- Free app with no ads or purchases for now.
+
+**App Name:**
+- Capto
+
+## 8. Build Steps
+
+**B-001: Set up the project**
+- Create a new iOS app in Xcode using SwiftUI.
+- Set the target to iOS 17+.
+- Name it "Capto" (placeholder name).
+- Open the project in Cursor.
+
+**B-002: Build the basic UI layout (S-001)**
+- Create the main screen structure: scrollable area for bubbles at top, fixed text input field at bottom.
+- Add a send button next to the text field.
+- Make the text field auto-focus when the view appears.
+- Test: Does the keyboard appear automatically when you open the app?
+
+**B-003: Set up SwiftData for thoughts (D-001)**
+- Create a Thought model with ID, content (String), and timestamp (Date).
+- Set up SwiftData container and model context.
+- Test: Can you create a test thought and see it saved?
+
+**B-004: Implement send functionality (F-002, F-003, F-004)**
+- Wire up the send button to save the text as a new thought.
+- Clear the text field after sending.
+- Ignore sends when text field is empty.
+- Keep keyboard visible after sending.
+- Test: Can you type and send multiple thoughts in a row?
+
+**B-005: Display thoughts as bubbles (F-005, F-012)**
+- Fetch all thoughts from SwiftData and display them in a scrollable list.
+- Style each thought as a centered, rounded bubble using iOS native styling.
+- Use consistent width and natural spacing.
+- Test: Do your saved thoughts appear as bubbles?
+
+**B-006: Add date headers (F-006)**
+- Group thoughts by date.
+- Insert date headers ("Today", "Yesterday", "Nov 14", etc.) above each day's first thought.
+- Test: Do date headers appear correctly when you have thoughts from different days?
+
+**B-007: Implement auto-scroll to bottom (F-008)**
+- When a new thought is sent, automatically scroll the stream to show the newest bubble at the bottom.
+- Test: After sending, does the view scroll to show your new thought?
+
+**B-008: Add timestamp reveal (F-007)**
+- When user taps or swipes on a bubble, reveal the exact time it was created.
+- Style it similar to iMessage timestamp behavior.
+- Test: Can you tap bubbles to see timestamps?
+
+**B-009: Implement delete functionality (F-010)**
+- Add swipe-left gesture on bubbles to reveal delete button.
+- Show confirmation dialog before deleting (S-003).
+- Remove thought from SwiftData on confirmation.
+- Test: Can you delete a thought? Does confirmation work?
+
+**B-010: Add pagination for older thoughts (F-009)**
+- Load thoughts in batches (e.g., 50 at a time).
+- Implement pull-to-refresh at the top to load older thoughts.
+- Test: Do older thoughts load when you pull down?
+
+**B-011: Build search functionality (F-011, S-002)**
+- Add search icon to top bar.
+- Create search screen with text field and filtered results.
+- Filter thoughts by matching search text in content.
+- Highlight matching text in results.
+- Test: Can you search for specific words and find matching thoughts?
+
+**B-012: Add search error handling**
+- Show "No thoughts found" message when search has no results.
+- Test: Search for gibberish—does it show the right message?
+
+**B-013: Polish the keyboard behavior (F-001, F-004)**
+- Ensure keyboard appears immediately on app launch.
+- Make sure keyboard stays visible during rapid-fire thought entry.
+- Test: Open app multiple times—does keyboard always appear instantly?
+
+**B-014: Handle edge cases and errors**
+- Add error handling for failed saves (F-002).
+- Add error handling for failed loading of older thoughts (F-009).
+- Test: Try to break the app—send very long thoughts, delete while scrolling, etc.
+
+**B-015: Support dark mode**
+- Ensure bubbles, background, and text colors adapt properly to light and dark mode.
+- Test: Switch between light and dark mode—does everything look good?
+
+**B-016: Optimize performance**
+- Use LazyVStack for efficient rendering of large thought lists.
+- Ensure smooth scrolling even with hundreds of thoughts.
+- Test: Add 100+ thoughts—is scrolling still smooth?
+
+**B-017: Polish the UI**
+- Fine-tune bubble spacing, padding, and sizing.
+- Ensure text input field is easily tappable.
+- Make sure send button is obvious and easy to hit.
+- Test: Does the app feel smooth and natural to use?
+
+**B-018: Create app icon**
+- Design a simple, minimal app icon.
+- Add it to Xcode.
+
+**B-019: Final testing on device**
+- Install on a real iPhone (not just simulator).
+- Use the app for a full day—capture real thoughts.
+- Fix any issues that come up.
+
+**B-020: Choose final app name**
+- Check App Store Connect for name availability.
+- Update project name in Xcode.
+- Update app icon if needed to match name.
+
+**B-021: Prepare for App Store**
+- Take screenshots of the main screen with sample thoughts.
+- Write a short app description.
+- Fill out App Store Connect listing.
+
+**B-022: Submit to TestFlight**
+- Upload build to App Store Connect.
+- Set up TestFlight.
+- Test the TestFlight version thoroughly.
+
+**B-023: Submit to App Store**
+- Fix any final bugs from TestFlight testing.
+- Submit for App Store review.
+
+---
+
+**End of Requirements Document**
+
+

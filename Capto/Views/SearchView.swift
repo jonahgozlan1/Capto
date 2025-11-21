@@ -135,7 +135,8 @@ struct SearchView: View {
                         ForEach(model.searchResults) { thought in
                             SearchResultRow(
                                 highlightedText: highlightedText(for: thought.content, query: trimmedQuery),
-                                timestamp: thought.createdAt
+                                timestamp: thought.createdAt,
+                                threadName: thought.thread?.name ?? "Unknown Thread"
                             )
                         }
                     }
@@ -154,10 +155,23 @@ struct SearchView: View {
 private struct SearchResultRow: View {
     let highlightedText: Text
     let timestamp: Date
+    let threadName: String
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
+            // Thread name badge (B-029, B-030)
+            Text(threadName)
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(
+                    Capsule()
+                        .fill(Color.secondary.opacity(colorScheme == .dark ? 0.20 : 0.12))
+                )
+            
             highlightedText
                 .font(.body)
                 .multilineTextAlignment(.leading)

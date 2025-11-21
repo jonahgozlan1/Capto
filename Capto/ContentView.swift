@@ -22,6 +22,7 @@ struct ContentView: View {
     @State private var pendingDeletionThought: Thought?
     @State private var isDeleteDialogPresented = false
     @State private var isSearchPresented = false
+    @State private var isThreadListPresented = false
     @State private var hasAppliedInitialFocus = false
     @State private var pendingFocusTask: DispatchWorkItem?
     @State private var timestampHideTasks: [UUID: DispatchWorkItem] = [:]
@@ -47,7 +48,7 @@ struct ContentView: View {
                     ScrollViewReader { proxy in
                         ScrollView(.vertical, showsIndicators: false) {
                             LazyVStack(alignment: .center, spacing: 12, pinnedViews: []) {
-                                if model.thoughts.isEmpty {
+                                if model.thoughts.isEmpty && !model.isSwitchingThread {
                                     emptyState
                                 } else {
                                     if model.isLoadingOlder {
@@ -59,6 +60,7 @@ struct ContentView: View {
                                     if let searchError = model.searchErrorMessage {
                                         SearchErrorBanner(message: searchError)
                                     }
+                                    // Smooth transition when switching threads (B-032)
                                     ThoughtStreamView(
                                         sections: model.thoughtSections,
                                         availableWidth: geometry.size.width,
@@ -69,6 +71,8 @@ struct ContentView: View {
                                         revealTimestamp: revealTimestampTemporarily(for:),
                                         requestDelete: requestDeletion(for:)
                                     )
+                                    .transition(.opacity.combined(with: .scale(scale: 0.98)))
+                                    .animation(.easeInOut(duration: 0.25), value: model.currentThread?.id)
                                 }
                             }
                             .padding(.horizontal, 16)
@@ -128,6 +132,21 @@ struct ContentView: View {
                                 }
                             }
                         }
+                        .onChange(of: model.currentThread?.id) { oldThreadID, newThreadID in
+                            // Auto-scroll to bottom when thread changes with smooth animation (B-023, B-032)
+                            if newThreadID != oldThreadID {
+                                print("[ContentView] Thread changed, preparing smooth transition (B-032)")
+                                // Wait for thoughts to load, then scroll with smooth animation
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                    if let lastThought = model.thoughts.last {
+                                        withAnimation(.easeOut(duration: 0.4)) {
+                                            proxy.scrollTo(lastThought.id, anchor: .bottom)
+                                        }
+                                        print("[ContentView] Scrolled to bottom with smooth animation (B-032)")
+                                    }
+                                }
+                            }
+                        }
                         .onAppear {
                             print("🔍 ScrollView appeared")
                             print("🔍 Number of thoughts:", model.thoughts.count)
@@ -141,18 +160,18 @@ struct ContentView: View {
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 composerBar
             }
-            .navigationTitle("Capto")
+            .navigationTitle(model.currentThread?.name ?? "Capto")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: {
-                        // TODO: Open thread selector
-                        print("[ContentView] Thread selector tapped")
+                        print("[ContentView] Thread list button tapped (B-021)")
+                        isThreadListPresented = true
                     }) {
                         Image(systemName: "line.3.horizontal")
                             .font(.system(size: 18, weight: .medium))
                     }
-                    .accessibilityLabel("Thread selector")
+                    .accessibilityLabel("Threads")
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -194,6 +213,9 @@ struct ContentView: View {
                 dismissSearch()
                     }
                 }
+        .sheet(isPresented: $isThreadListPresented) {
+            ThreadListView(model: model)
+        }
         .onChange(of: scenePhase) { _, newPhase in
             // Only auto-focus on initial launch, not when returning from background
             // This allows users to dismiss keyboard and have it stay dismissed
@@ -206,6 +228,11 @@ struct ContentView: View {
                 enforceKeyboardFocus(reason: "search dismissed", delay: 0.05)
             } else {
                 releaseKeyboardFocus(reason: "search presented")
+            }
+        }
+        .onChange(of: isThreadListPresented) { _, presented in
+            if presented {
+                releaseKeyboardFocus(reason: "thread list presented")
             }
         }
         .onChange(of: isDeleteDialogPresented) { _, presented in
@@ -554,13 +581,19 @@ struct ContentView: View {
 
 #Preview {
     do {
-        let container = try ModelContainer(for: Thought.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let schema = Schema([Thought.self, Thread.self])
+        let container = try ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
         let context = ModelContext(container)
+        
+        // Create a mock default thread for preview (B-018)
+        let previewThread = Thread(name: "Thoughts", sortOrder: 0, isDefault: true)
+        context.insert(previewThread)
+        
         let samples = [
-            Thought(content: "Walked past a coffee shop that smelled amazing.", createdAt: Date().addingTimeInterval(-60)),
-            Thought(content: "Remember to send thank-you note.", createdAt: Date().addingTimeInterval(-3600)),
-            Thought(content: "Midnight idea: ambient rain toggle.", createdAt: Date().addingTimeInterval(-86400)),
-            Thought(content: "Goal for tomorrow: take 10k steps.", createdAt: Date().addingTimeInterval(-86400 * 2))
+            Thought(content: "Walked past a coffee shop that smelled amazing.", createdAt: Date().addingTimeInterval(-60), thread: previewThread),
+            Thought(content: "Remember to send thank-you note.", createdAt: Date().addingTimeInterval(-3600), thread: previewThread),
+            Thought(content: "Midnight idea: ambient rain toggle.", createdAt: Date().addingTimeInterval(-86400), thread: previewThread),
+            Thought(content: "Goal for tomorrow: take 10k steps.", createdAt: Date().addingTimeInterval(-86400 * 2), thread: previewThread)
         ]
         samples.forEach { context.insert($0) }
 
