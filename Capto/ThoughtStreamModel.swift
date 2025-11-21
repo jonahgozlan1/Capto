@@ -826,7 +826,7 @@ final class ThoughtStreamModel {
     /// Switches to the specified thread and loads its thoughts (B-023, B-032).
     /// Optimized for performance with efficient queries and smooth transitions.
     func switchThread(_ thread: Thread) {
-        guard let context = modelContext else {
+        guard modelContext != nil else {
             print("[ThoughtStreamModel] Cannot switch thread without model context")
             switchThreadErrorMessage = "Failed to load thread. Try again."
             return
@@ -835,44 +835,38 @@ final class ThoughtStreamModel {
         // Set switching state for UI transitions (B-032)
         isSwitchingThread = true
         
-        // Verify thread exists in context by checking if it's in our threads list
+        // Verify thread exists by checking if it's in our threads list
         // or by using the thread directly (it should already be a managed object)
-        do {
-            // Use the thread directly if it's already a managed object
-            // Otherwise, try to find it in our threads list
-            let validThread: Thread
-            if let existingThread = threads.first(where: { $0.id == thread.id }) {
-                validThread = existingThread
-            } else {
-                // Thread might be newly created, use it directly
-                validThread = thread
-            }
-            
-            // Update current thread first (B-032)
-            currentThread = validThread
-            switchThreadErrorMessage = nil
-            
-            // Clear existing thoughts and reset pagination state (B-032)
-            thoughts = []
-            oldestLoadedDate = nil
-            canLoadOlder = false
-            
-            // Load thoughts for the new thread using efficient relationship access (B-032)
-            // This uses thread.thoughts directly, which is already loaded and efficient
-            refreshThoughts()
-            
-            // Clear switching state after a brief delay to allow UI to update (B-032)
-            Task { @MainActor in
-                try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
-                isSwitchingThread = false
-            }
-            
-            print("[ThoughtStreamModel] Switched to thread '\(validThread.name)' (B-023, B-032)")
-        } catch {
-            isSwitchingThread = false
-            print("[ThoughtStreamModel] Failed to switch thread: \(error.localizedDescription)")
-            switchThreadErrorMessage = "Failed to load thread. Try again."
+        // Use the thread directly if it's already a managed object
+        // Otherwise, try to find it in our threads list
+        let validThread: Thread
+        if let existingThread = threads.first(where: { $0.id == thread.id }) {
+            validThread = existingThread
+        } else {
+            // Thread might be newly created, use it directly
+            validThread = thread
         }
+        
+        // Update current thread first (B-032)
+        currentThread = validThread
+        switchThreadErrorMessage = nil
+        
+        // Clear existing thoughts and reset pagination state (B-032)
+        thoughts = []
+        oldestLoadedDate = nil
+        canLoadOlder = false
+        
+        // Load thoughts for the new thread using efficient relationship access (B-032)
+        // This uses thread.thoughts directly, which is already loaded and efficient
+        refreshThoughts()
+        
+        // Clear switching state after a brief delay to allow UI to update (B-032)
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
+            isSwitchingThread = false
+        }
+        
+        print("[ThoughtStreamModel] Switched to thread '\(validThread.name)' (B-023, B-032)")
     }
     
     /// Clears the switch thread error state.

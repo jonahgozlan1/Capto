@@ -126,7 +126,7 @@ struct CreateThreadView: View {
             return
         }
         
-        if let newThread = model.createThread(name: trimmedName) {
+        if let _ = model.createThread(name: trimmedName) {
             print("[CreateThreadView] Thread '\(trimmedName)' created successfully (B-022)")
             dismiss()
             // Note: Thread switching will be implemented in B-023
